@@ -1,0 +1,34 @@
+---
+ - hosts: webserver
+   become: true
+   tasks:
+     - name: install apache
+       apt: name=apache2 state=present update_cache=yes
+     - name: deleted index.html
+       file: path=/var/www/html/index.html state=absent
+       notify: restart apache2
+
+   handlers:
+     - name: restart apache2
+       service: name=apache2 state=restarted
+
+ - hosts: app01
+   become: true
+   tasks:
+     - name: set up index.html for first web server
+       template: src=/root/ansiblework/index.html  dest=/var/www/html/index.html mode=0644
+       notify: restart apache2
+
+   handlers:
+     - name: restart apache2
+       service: name=apache2 state=restarted
+ - hosts: app02
+   become: true
+   tasks:
+     - name: set up index.html for second web server
+       template: src=/root/ansiblework/app02server/index.html dest=/var/www/html/index.html mode=0644
+       notify: restart apache2
+
+   handlers:
+     - name: restart apache2
+       service: name=apache2 state=restarted
